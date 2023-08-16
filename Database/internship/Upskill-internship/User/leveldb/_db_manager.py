@@ -29,3 +29,19 @@ def show_deatails():
     data = myCur.fetchall()
     return data
 
+if not os.path.exists('user.db'):
+    create_dbtable()
+
+myTable1 = PrettyTable(["Website","URL","Username","Email","Password","Description"])
+myTable2 = PrettyTable(["Website","URL","Username","Email","Password","Description"])
+  
+# Add rows to Database
+
+store_password( "instagram", "insta.com", "hamsa","ham","pass","private acc")
+store_password( "facebook", "insta.com", "hamsa","ham","pass","private acc")
+store_password( "twitter", "insta.com", "hamsa","ham","pass","private acc")
+store_password( "thread", "insta.com", "hamsa","ham","pass","private acc")
+store_password( "snap", "insta.com", "hamsa","ham","pass","private acc")
+store_password( "insram", "insta.com", "hamsa","ham","pass","private acc")
+store_password( "tagram", "insta.com", "hamsa","ham","pass","private acc")
+  
