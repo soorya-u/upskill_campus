@@ -13,3 +13,10 @@ def create_dbtable():
                 Description TEXT(5000));''')
     conn.commit()
     conn.close()
+def create_datbase():
+    if os.path.exists(r"User/leveldb/user.db"):
+        if not os.path.exists(r"User/leveldb/user.db"):
+            create_dbtable()
+        else:
+            os.mkdir(r"User/leveldb")
+            create_dbtable()
