@@ -45,3 +45,16 @@ store_password( "snap", "insta.com", "hamsa","ham","pass","private acc")
 store_password( "insram", "insta.com", "hamsa","ham","pass","private acc")
 store_password( "tagram", "insta.com", "hamsa","ham","pass","private acc")
   
+data = show_deatails()
+for row in data:
+    myTable1.add_row(list(row))
+
+print(myTable1)
+print('\n\n')
+
+update_password('instagram','kolitandu')
+
+data = show_deatails()
+for row in data:
+    myTable2.add_row(list(row))
+print(myTable2)
