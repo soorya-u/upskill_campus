@@ -20,5 +20,12 @@ def update_password(website,new_password):
     conn.commit()
     conn.close()
 
+def show_deatails():
+    conn=connect_database()
+    myCur = conn.cursor()
 
+    sqlQuery= "SELECT * FROM UserDataBase"
+    myCur.execute(sqlQuery)
+    data = myCur.fetchall()
+    return data
 
