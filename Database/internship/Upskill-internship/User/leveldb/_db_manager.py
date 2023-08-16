@@ -20,3 +20,13 @@ def update_password(website,new_password):
     conn.commit()
     conn.close()
 
+def update_password(website,new_password):
+    conn = connect_database()  
+    myCur = conn.cursor()
+
+    sqlQuery = f'''update UserDataBase set Password = "{new_password}" where Website = "{website}"'''
+
+    myCur.execute(sqlQuery)
+    conn.commit()
+    conn.close()
+
