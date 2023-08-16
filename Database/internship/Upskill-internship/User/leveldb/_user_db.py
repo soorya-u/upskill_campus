@@ -20,3 +20,6 @@ def create_datbase():
         else:
             os.mkdir(r"User/leveldb")
             create_dbtable()
+def connect_database():
+    conn=sqlite3.connect("user.db")
+    return conn
