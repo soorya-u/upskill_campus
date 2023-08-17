@@ -10,3 +10,6 @@ def verifyingHash(password,stored_password_hash):
     if(password_hash==stored_password_hash):
         return True
     return False
+
+def generatePassword():
+    pass
