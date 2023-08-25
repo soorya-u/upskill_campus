@@ -1,6 +1,7 @@
 import tkinter
 from tkinter import *
 from tkinter import messagebox
+from tkinter import ttk
 import sqlite3
 
 root = Tk()
@@ -185,12 +186,17 @@ def log_in():
     pwd_btn = Button(bottom, text="Generate Password",width=18)
     pwd_btn.place(x=350, y=330)
 
-    usn=username.get()
     #FUNCTION FOR SHOWING DETAILS
     def show_details():
         mid = Toplevel()
         mid.title("Main Data")
         mid.geometry("710x800")
+
+        def update_details():
+            pass
+
+        def delete_details():
+            pass
         
         lbltitle = Label(mid, bd=20, text="Data Records", bg="white",font=("times new roman", 22, "bold"),padx=270,pady=5)
         lbltitle.grid(row=0,column=0,columnspan= 20)
@@ -211,6 +217,10 @@ def log_in():
         h5 = Label(mid,text="Description", font="time 15 bold")
         h5.grid(row=1,column=4,padx=10,pady=10)
         
+        update_btn = Button(mid, text="Update",command=update_details)
+        update_btn.grid(row=1,column=5)
+        update_btn = Button(mid, text="Delete",command=delete_details)
+        update_btn.grid(row=2,column=5)
         #CONNECTING TO THE DB TO FETCH AND DISPLAY DATA
         acc = sqlite3.connect("passwords.db")
         a = acc.cursor()
@@ -219,19 +229,19 @@ def log_in():
         r = a.fetchall()
         num = 2
         for i in r:
-            website = Label(mid, text=i[0], font="time 12 bold")
+            website = Label(mid, text=i[0], font="time 8 bold")
             website.grid(row=num,column=0,padx=10,pady=10)
 
-            email = Label(mid, text=i[1], font="time 12 bold")
+            email = Label(mid, text=i[1], font="time 8 bold")
             email.grid(row=num,column=1,padx=10,pady=10)
 
-            username = Label(mid, text=i[2], font="time 12 bold")
+            username = Label(mid, text=i[2], font="time 8 bold")
             username.grid(row=num,column=2,padx=10,pady=10)
 
-            password = Label(mid, text=i[3], font="time 12 bold")
+            password = Label(mid, text=i[3], font="time 8 bold")
             password.grid(row=num,column=3,padx=10,pady=10)
 
-            description = Label(mid, text=i[4], font="time 12 bold")
+            description = Label(mid, text=i[4], font="time 8 bold")
             description.grid(row=num,column=4,padx=10,pady=10)
             
             num = num+1
