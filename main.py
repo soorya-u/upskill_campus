@@ -1,7 +1,6 @@
 import tkinter
 from tkinter import *
 from tkinter import messagebox
-from tkinter import ttk
 import sqlite3
 import os
 from EncryptAndDecrypt import *
@@ -237,11 +236,6 @@ def log_in():
         mid.title("Main Data")
         mid.geometry("710x800")
 
-        def update_details():
-            pass
-
-        def delete_details():
-            pass
         
         lbltitle = Label(mid, bd=20, text="Data Records", bg="white",font=("times new roman", 22, "bold"),padx=270,pady=5)
         lbltitle.grid(row=0,column=0,columnspan= 20)
@@ -261,11 +255,7 @@ def log_in():
 
         h5 = Label(mid,text="Description", font="time 15 bold")
         h5.grid(row=1,column=4,padx=10,pady=10)
-        
-        update_btn = Button(mid, text="Update",command=update_details)
-        update_btn.grid(row=1,column=5)
-        update_btn = Button(mid, text="Delete",command=delete_details)
-        update_btn.grid(row=2,column=5)
+
         #CONNECTING TO THE DB TO FETCH AND DISPLAY DATA
         acc = sqlite3.connect(f"{u}.db")
         a = acc.cursor()
