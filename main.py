@@ -37,7 +37,7 @@ def register_():
     #CREATING A CURSOR
     u = usrinfo.cursor()
     #CREATING TABLE
-    u.execute("CREATE TABLE IF NOT EXISTS userinfo( FName Text, SName Text,email Text, Phone NUMERIC,usernameText,PasswordText)")
+    u.execute("CREATE TABLE IF NOT EXISTS userinfo( FName Text, SName Text,email Text, Phone NUMERIC,usernameText,PasswordHash)")
 
     #COMMITING CHANGES
     usrinfo.commit()
@@ -87,12 +87,13 @@ def register_():
         mal = email.get()
         phone = ph_num.get()
         new_pass = n_pass.get()
+        hash_pass = creatingHash(new_pass)
 
         #CREATING A DATABASE
         usrinfo = sqlite3.connect("userinfo.db")
         #CREATING A CURSOR
         u = usrinfo.cursor()
-        u.execute("INSERT INTO userinfo VALUES('"+fname+"','"+lname+"','"+mal+"','"+phone+"','"+usrn+"','"+new_pass+"')")
+        u.execute("INSERT INTO userinfo VALUES('"+fname+"','"+lname+"','"+mal+"','"+phone+"','"+usrn+"','"+hash_pass+"')")
         messagebox.showinfo("Information","Successfully Inserted!")
         top.destroy()
 
@@ -141,9 +142,9 @@ def log_in():
         usrinfo = sqlite3.connect("userinfo.db")
         c = usrinfo.cursor()
         try:
-            c.execute(f'''SELECT PasswordText FROM userinfo WHERE usernameText="{u}"''')
+            c.execute(f'''SELECT PasswordHash FROM userinfo WHERE usernameText="{u}"''')
             passw = c.fetchall()[0][0]
-            if not passw == master_password_var.get():
+            if not verifyingHash(master_password_var.get(),passw):
                 messagebox.showinfo("Warning!","Incorrect Username or Password")
                 return
         except:
