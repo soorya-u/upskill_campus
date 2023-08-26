@@ -4,6 +4,8 @@ from tkinter import messagebox
 from tkinter import ttk
 import sqlite3
 import os
+from EncryptAndDecrypt import *
+from Hash import *
 
 root = Tk()
 root.title("Prototype")
