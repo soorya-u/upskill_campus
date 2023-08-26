@@ -1,26 +1,34 @@
 import tkinter
 from tkinter import *
 from tkinter import messagebox
-from tkinter import ttk
 import sqlite3
+import os
+from EncryptAndDecrypt import *
+from Hash import *
 
 root = Tk()
 root.title("Prototype")
 root.geometry("400x400")
 
+master_username_var = StringVar()
+master_password_var = StringVar()
+
 # ASKING USERNAME AND PASSWORD
 label1= Label(root, text="Username: ")
 label1.place(x=10,y=150)
-username= Entry(root, width=50, borderwidth=5)
+username= Entry(root, width=50, borderwidth=5,textvariable=master_username_var)
 username.place(x=80,y=150)
 
 label2= Label(root, text="Password: ")
 label2.place(x=10,y=180)
-password= Entry(root, width=50, borderwidth=5)
+password= Entry(root, width=50, borderwidth=5, textvariable=master_password_var)
 password.place(x=80,y=180)
+
+uk=None
 
 #REGISTER BUTTON
 def register_():
+    global top
     top = Toplevel()
     top.title("Registration form")
     top.geometry("550x350")
@@ -30,7 +38,7 @@ def register_():
     #CREATING A CURSOR
     u = usrinfo.cursor()
     #CREATING TABLE
-    u.execute("CREATE TABLE IF NOT EXISTS userinfo( FName Text, SName Text,email Text, Phone NUMERIC,username Text,Password Text)")
+    u.execute("CREATE TABLE IF NOT EXISTS userinfo( FName Text, SName Text,email Text, Phone NUMERIC,usernameText,PasswordHash,UniqueKey)")
 
     #COMMITING CHANGES
     usrinfo.commit()
@@ -39,7 +47,11 @@ def register_():
     usrinfo.close()
 
     def create_acc():
-        if u_name.get()=="":
+
+        global usrn
+        usrn = u_name.get()
+
+        if usrn=="":
             messagebox.showerror("Warning!", "Enter username")
 
         elif email.get() == "":
@@ -59,11 +71,11 @@ def register_():
 
         else:
             #CREATING A DATABASE
-            acc = sqlite3.connect("passwords.db")
+            acc = sqlite3.connect(f"{usrn}.db")
             #CREATING A CURSOR
             a = acc.cursor()
             #CREATING TABLE
-            a.execute("CREATE TABLE IF NOT EXISTS passwords( Domain Text, username Text,email Text, password Text, description Text)")
+            a.execute(f"CREATE TABLE IF NOT EXISTS passwords( Domain Text, username Text,email Text, passwordEncrypt, description Text)")
 
             #COMMITING CHANGES
             acc.commit()
@@ -75,15 +87,20 @@ def register_():
         lname = l_name.get()
         mal = email.get()
         phone = ph_num.get()
-        usrn = u_name.get()
         new_pass = n_pass.get()
+        hash_pass = creatingHash(new_pass)
+        generateUniqueKey()
+        uniqueKey = getUniqueKey().decode()
+        destroyUniqueKey()
 
         #CREATING A DATABASE
         usrinfo = sqlite3.connect("userinfo.db")
         #CREATING A CURSOR
         u = usrinfo.cursor()
-        u.execute("INSERT INTO userinfo VALUES('"+fname+"','"+lname+"','"+mal+"','"+phone+"','"+usrn+"','"+new_pass+"')")
+        u.execute("INSERT INTO userinfo VALUES('"+fname+"','"+lname+"','"+mal+"','"+phone+"','"+usrn+"','"+hash_pass+"','"+uniqueKey+"')")
         messagebox.showinfo("Information","Successfully Inserted!")
+        top.destroy()
+
 
         usrinfo.commit()
         usrinfo.close()
@@ -118,10 +135,35 @@ def register_():
         
 # LOGIN
 def log_in():
+
+    global master_username_var
+    global master_password_var
+    u = master_username_var.get()
+    if not os.path.isfile(f'{u}.db'):
+        messagebox.showinfo("Warning!","No Account Found! Create an Account")
+        return
+    else:
+        usrinfo = sqlite3.connect("userinfo.db")
+        c = usrinfo.cursor()
+        try:
+            c.execute(f'''SELECT PasswordHash,UniqueKey FROM userinfo WHERE usernameText="{u}"''')
+            data = c.fetchall()[0]
+            global uk
+            uk = data[1].encode()
+            if not verifyingHash(master_password_var.get(),data[0]):
+                messagebox.showinfo("Warning!","Incorrect Username or Password")
+                return
+        except:
+            messagebox.showinfo("Warning!","Incorrect Username or Password")
+            return
+        usrinfo.commit()
+        usrinfo.close()
+
+
+
     bottom = Toplevel()
     bottom.title("Passwords")
     bottom.geometry("500x500")
-
 
     #FUNCTION FOR ADDING DATA INTO THE DATABASE
     def push():
@@ -129,11 +171,13 @@ def log_in():
         mail = email.get()
         usrnm = username.get()
         paswd = password.get()
+        global uk
+        enc_pass = Encrypt(paswd,uk).decode()
         descrip = str(clicked.get())
-        # print("Selected Option: {}".format(clicked.get()))
-        acc = sqlite3.connect("passwords.db")
+
+        acc = sqlite3.connect(f"{u}.db")
         a = acc.cursor()
-        a.execute("INSERT INTO passwords VALUES('"+web+"','"+mail+"','"+usrnm+"','"+paswd+"','"+descrip+"')")
+        a.execute("INSERT INTO passwords VALUES('"+web+"','"+usrnm+"','"+mail+"','"+enc_pass+"','"+descrip+"')")
         messagebox.showinfo("Information","Successfully Inserted!")
 
         acc.commit()
@@ -192,11 +236,6 @@ def log_in():
         mid.title("Main Data")
         mid.geometry("710x800")
 
-        def update_details():
-            pass
-
-        def delete_details():
-            pass
         
         lbltitle = Label(mid, bd=20, text="Data Records", bg="white",font=("times new roman", 22, "bold"),padx=270,pady=5)
         lbltitle.grid(row=0,column=0,columnspan= 20)
@@ -216,18 +255,15 @@ def log_in():
 
         h5 = Label(mid,text="Description", font="time 15 bold")
         h5.grid(row=1,column=4,padx=10,pady=10)
-        
-        update_btn = Button(mid, text="Update",command=update_details)
-        update_btn.grid(row=1,column=5)
-        update_btn = Button(mid, text="Delete",command=delete_details)
-        update_btn.grid(row=2,column=5)
+
         #CONNECTING TO THE DB TO FETCH AND DISPLAY DATA
-        acc = sqlite3.connect("passwords.db")
+        acc = sqlite3.connect(f"{u}.db")
         a = acc.cursor()
         a.execute("SELECT * FROM passwords")
 
         r = a.fetchall()
         num = 2
+        global uk
         for i in r:
             website = Label(mid, text=i[0], font="time 8 bold")
             website.grid(row=num,column=0,padx=10,pady=10)
@@ -238,7 +274,7 @@ def log_in():
             username = Label(mid, text=i[2], font="time 8 bold")
             username.grid(row=num,column=2,padx=10,pady=10)
 
-            password = Label(mid, text=i[3], font="time 8 bold")
+            password = Label(mid, text=Decrypt(i[3].encode(),uk), font="time 8 bold")
             password.grid(row=num,column=3,padx=10,pady=10)
 
             description = Label(mid, text=i[4], font="time 8 bold")
