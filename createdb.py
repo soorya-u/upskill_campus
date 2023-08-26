@@ -9,15 +9,18 @@ root = Tk()
 root.title("Prototype")
 root.geometry("400x400")
 
+master_username_var = StringVar()
+master_password_var = StringVar()
+
 # ASKING USERNAME AND PASSWORD
 label1= Label(root, text="Username: ")
 label1.place(x=10,y=150)
-username= Entry(root, width=50, borderwidth=5)
+username= Entry(root, width=50, borderwidth=5,textvariable=master_username_var)
 username.place(x=80,y=150)
 
 label2= Label(root, text="Password: ")
 label2.place(x=10,y=180)
-password= Entry(root, width=50, borderwidth=5)
+password= Entry(root, width=50, borderwidth=5, textvariable=master_password_var)
 password.place(x=80,y=180)
 
 #REGISTER BUTTON
@@ -32,7 +35,7 @@ def register_():
     #CREATING A CURSOR
     u = usrinfo.cursor()
     #CREATING TABLE
-    u.execute("CREATE TABLE IF NOT EXISTS userinfo( FName Text, SName Text,email Text, Phone NUMERIC,username Text,Password Text)")
+    u.execute("CREATE TABLE IF NOT EXISTS userinfo( FName Text, SName Text,email Text, Phone NUMERIC,usernameText,PasswordText)")
 
     #COMMITING CHANGES
     usrinfo.commit()
@@ -125,12 +128,33 @@ def register_():
         
 # LOGIN
 def log_in():
+
+    global master_username_var
+    global master_password_var
+    u = master_username_var.get()
+    if not os.path.isfile(f'{u}.db'):
+        messagebox.showinfo("Warning!","No Account Found! Create an Account")
+        return
+    else:
+        usrinfo = sqlite3.connect("userinfo.db")
+        c = usrinfo.cursor()
+        try:
+            c.execute(f'''SELECT PasswordText FROM userinfo WHERE usernameText="{u}"''')
+            passw = c.fetchall()[0][0]
+            if not passw == master_password_var.get():
+                messagebox.showinfo("Warning!","Incorrect Username or Password")
+                return
+        except:
+            messagebox.showinfo("Warning!","Incorrect Username or Password")
+            return
+        usrinfo.commit()
+        usrinfo.close()
+
+
+
     bottom = Toplevel()
     bottom.title("Passwords")
     bottom.geometry("500x500")
-
-
-
 
     #FUNCTION FOR ADDING DATA INTO THE DATABASE
     def push():
@@ -139,10 +163,10 @@ def log_in():
         usrnm = username.get()
         paswd = password.get()
         descrip = str(clicked.get())
-        # print("Selected Option: {}".format(clicked.get()))
+
         acc = sqlite3.connect(f"{usrn}.db")
         a = acc.cursor()
-        a.execute("INSERT INTO passwords VALUES('"+web+"','"+mail+"','"+usrnm+"','"+paswd+"','"+descrip+"')")
+        a.execute("INSERT INTO passwords VALUES('"+web+"','"+usrnm+"','"+mail+"','"+paswd+"','"+descrip+"')")
         messagebox.showinfo("Information","Successfully Inserted!")
 
         acc.commit()
