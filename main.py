@@ -25,6 +25,8 @@ label2.place(x=10,y=180)
 password= Entry(root, width=50, borderwidth=5, textvariable=master_password_var)
 password.place(x=80,y=180)
 
+uk=None
+
 #REGISTER BUTTON
 def register_():
     global top
@@ -37,7 +39,7 @@ def register_():
     #CREATING A CURSOR
     u = usrinfo.cursor()
     #CREATING TABLE
-    u.execute("CREATE TABLE IF NOT EXISTS userinfo( FName Text, SName Text,email Text, Phone NUMERIC,usernameText,PasswordHash)")
+    u.execute("CREATE TABLE IF NOT EXISTS userinfo( FName Text, SName Text,email Text, Phone NUMERIC,usernameText,PasswordHash,UniqueKey)")
 
     #COMMITING CHANGES
     usrinfo.commit()
@@ -74,7 +76,7 @@ def register_():
             #CREATING A CURSOR
             a = acc.cursor()
             #CREATING TABLE
-            a.execute(f"CREATE TABLE IF NOT EXISTS passwords( Domain Text, username Text,email Text, password Text, description Text)")
+            a.execute(f"CREATE TABLE IF NOT EXISTS passwords( Domain Text, username Text,email Text, passwordEncrypt, description Text)")
 
             #COMMITING CHANGES
             acc.commit()
@@ -88,12 +90,15 @@ def register_():
         phone = ph_num.get()
         new_pass = n_pass.get()
         hash_pass = creatingHash(new_pass)
+        generateUniqueKey()
+        uniqueKey = getUniqueKey().decode()
+        destroyUniqueKey()
 
         #CREATING A DATABASE
         usrinfo = sqlite3.connect("userinfo.db")
         #CREATING A CURSOR
         u = usrinfo.cursor()
-        u.execute("INSERT INTO userinfo VALUES('"+fname+"','"+lname+"','"+mal+"','"+phone+"','"+usrn+"','"+hash_pass+"')")
+        u.execute("INSERT INTO userinfo VALUES('"+fname+"','"+lname+"','"+mal+"','"+phone+"','"+usrn+"','"+hash_pass+"','"+uniqueKey+"')")
         messagebox.showinfo("Information","Successfully Inserted!")
         top.destroy()
 
@@ -142,9 +147,11 @@ def log_in():
         usrinfo = sqlite3.connect("userinfo.db")
         c = usrinfo.cursor()
         try:
-            c.execute(f'''SELECT PasswordHash FROM userinfo WHERE usernameText="{u}"''')
-            passw = c.fetchall()[0][0]
-            if not verifyingHash(master_password_var.get(),passw):
+            c.execute(f'''SELECT PasswordHash,UniqueKey FROM userinfo WHERE usernameText="{u}"''')
+            data = c.fetchall()[0]
+            global uk
+            uk = data[1].encode()
+            if not verifyingHash(master_password_var.get(),data[0]):
                 messagebox.showinfo("Warning!","Incorrect Username or Password")
                 return
         except:
@@ -165,11 +172,13 @@ def log_in():
         mail = email.get()
         usrnm = username.get()
         paswd = password.get()
+        global uk
+        enc_pass = Encrypt(paswd,uk).decode()
         descrip = str(clicked.get())
 
-        acc = sqlite3.connect(f"{usrn}.db")
+        acc = sqlite3.connect(f"{u}.db")
         a = acc.cursor()
-        a.execute("INSERT INTO passwords VALUES('"+web+"','"+usrnm+"','"+mail+"','"+paswd+"','"+descrip+"')")
+        a.execute("INSERT INTO passwords VALUES('"+web+"','"+usrnm+"','"+mail+"','"+enc_pass+"','"+descrip+"')")
         messagebox.showinfo("Information","Successfully Inserted!")
 
         acc.commit()
@@ -258,12 +267,13 @@ def log_in():
         update_btn = Button(mid, text="Delete",command=delete_details)
         update_btn.grid(row=2,column=5)
         #CONNECTING TO THE DB TO FETCH AND DISPLAY DATA
-        acc = sqlite3.connect("passwords.db")
+        acc = sqlite3.connect(f"{u}.db")
         a = acc.cursor()
         a.execute("SELECT * FROM passwords")
 
         r = a.fetchall()
         num = 2
+        global uk
         for i in r:
             website = Label(mid, text=i[0], font="time 8 bold")
             website.grid(row=num,column=0,padx=10,pady=10)
@@ -274,7 +284,7 @@ def log_in():
             username = Label(mid, text=i[2], font="time 8 bold")
             username.grid(row=num,column=2,padx=10,pady=10)
 
-            password = Label(mid, text=i[3], font="time 8 bold")
+            password = Label(mid, text=Decrypt(i[3].encode(),uk), font="time 8 bold")
             password.grid(row=num,column=3,padx=10,pady=10)
 
             description = Label(mid, text=i[4], font="time 8 bold")
