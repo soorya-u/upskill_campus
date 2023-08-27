@@ -226,8 +226,13 @@ def log_in():
     add_btn = Button(bottom, text="Add",width=18, command= push)
     add_btn.place(x=100, y=385)
 
+    def genPass(pass_entry:Entry):
+        gen_pass = generatePassword()
+        pass_entry.delete(0,END)
+        pass_entry.insert(0,gen_pass)
+
     #BUTTON TO GENERATE PASSWORD
-    pwd_btn = Button(bottom, text="Generate Password",width=18)
+    pwd_btn = Button(bottom, text="Generate Password",width=18,command=lambda: genPass(password))
     pwd_btn.place(x=350, y=330)
 
     #FUNCTION FOR SHOWING DETAILS
